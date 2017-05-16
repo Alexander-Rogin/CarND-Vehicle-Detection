@@ -13,6 +13,8 @@ from sklearn.externals import joblib
 # from sklearn.model_selection import train_test_split
 from sklearn.cross_validation import train_test_split
 
+import features
+
 # Define a function to return HOG features and visualization
 def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
                         vis=False, feature_vec=True):
@@ -81,35 +83,38 @@ def extract_single_image_features(image, cspace='RGB', orient=9,
 X_SCALER_FILENAME = 'x_scaler.pkl'
 SVM_FILENAME = 'model_svm.pkl'
 
-def train():
+def train(color_space='RGB', spatial_size=(32, 32), hist_bins=32, orient=9, pix_per_cell=8,
+            cell_per_block=2, hog_channel=0, spatial_feat=True, hist_feat=True, hog_feat=True):
     # Divide up into cars and notcars
     cars = glob.glob('train_images/vehicles/**/*.png', recursive=True)
     notcars = glob.glob('train_images/non-vehicles/**/*.png', recursive=True)
 
-    # Reduce the sample size because HOG features are slow to compute
-    # The quiz evaluator times out after 13s of CPU time
-    # sample_size = 500
-    # cars = cars[0:sample_size]
-    # notcars = notcars[0:sample_size]
+    # Reduce the sample size to test params
+    sample_size = 500
+    cars = cars[0:sample_size]
+    notcars = notcars[0:sample_size]
 
-    ### TODO: Tweak these parameters and see how the results change.
-    colorspace = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-    orient = 9
-    pix_per_cell = 8
-    cell_per_block = 2
-    hog_channel = 0 # Can be 0, 1, 2, or "ALL"
 
+    print(cars[:5])
+    exit()
     t=time.time()
-    car_features = extract_features(cars, cspace=colorspace, orient=orient, 
-                            pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, 
-                            hog_channel=hog_channel)
-    notcar_features = extract_features(notcars, cspace=colorspace, orient=orient, 
-                            pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, 
-                            hog_channel=hog_channel)
+    car_features = features.extract_features(cars, color_space=color_space, 
+                        spatial_size=spatial_size, hist_bins=hist_bins, 
+                        orient=orient, pix_per_cell=pix_per_cell, 
+                        cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                        hist_feat=hist_feat, hog_feat=hog_feat)
+    notcar_features = features.extract_features(notcars, color_space=color_space, 
+                        spatial_size=spatial_size, hist_bins=hist_bins, 
+                        orient=orient, pix_per_cell=pix_per_cell, 
+                        cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                        hist_feat=hist_feat, hog_feat=hog_feat)
     t2 = time.time()
     print(round(t2-t, 2), 'Seconds to extract HOG features...')
+
     # Create an array stack of feature vectors
-    X = np.vstack((car_features, notcar_features)).astype(np.float64)                        
+    X = np.vstack((car_features, notcar_features)).astype(np.float64)
     # Fit a per-column scaler
     X_scaler = StandardScaler().fit(X)
     joblib.dump(X_scaler, X_SCALER_FILENAME)

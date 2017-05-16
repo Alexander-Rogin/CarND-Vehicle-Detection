@@ -92,26 +92,45 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
     return on_windows
 
 
-def getClassifier(train=False):
+def getClassifier(train=False, color_space='RGB', spatial_size=(32, 32), hist_bins=32, orient=9, 
+                        pix_per_cell=8, cell_per_block=2, hog_channel=0,
+                        spatial_feat=True, hist_feat=True, hog_feat=True):
     if train:
-        return hog.train()
+        return hog.train(color_space=color_space, spatial_size=spatial_size, hist_bins=hist_bins, 
+                        orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, spatial_feat=spatial_feat, hist_feat=hist_feat, hog_feat=hog_feat)
+
     return hog.loadModel()
 
 
+### TODO: Tweak these parameters and see how the results change.
+color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 9  # HOG orientations
+pix_per_cell = 8 # HOG pixels per cell
+cell_per_block = 2 # HOG cells per block
+hog_channel = 0 # Can be 0, 1, 2, or "ALL"
+spatial_size = (16, 16) # Spatial binning dimensions
+hist_bins = 16    # Number of histogram bins
+spatial_feat = True # Spatial features on or off
+hist_feat = True # Histogram features on or off
+hog_feat = True # HOG features on or off
+y_start_stop = [None, None] # Min and max in y to search in slide_window()
 
-image = mpimg.imread('test_images/test6.jpg')
-X_scaler, svc = getClassifier()
+
+X_scaler, svc = getClassifier(train=True, color_space=color_space, 
+                        spatial_size=spatial_size, hist_bins=hist_bins, 
+                        orient=orient, pix_per_cell=pix_per_cell, 
+                        cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                        hist_feat=hist_feat, hog_feat=hog_feat)
+# X_scaler, svc = getClassifier()
+
+image = mpimg.imread('test_images/test1.jpg')
 windows = getWindows(image)
 
 draw_image = np.copy(image)
 
 
-### TODO: Tweak these parameters and see how the results change.
-color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-orient = 9
-pix_per_cell = 8
-cell_per_block = 2
-hog_channel = 0 # Can be 0, 1, 2, or "ALL"
 hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
                         orient=orient, pix_per_cell=pix_per_cell, 
                         cell_per_block=cell_per_block, 
