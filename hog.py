@@ -7,6 +7,7 @@ import time
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
 from skimage.feature import hog
+from sklearn.externals import joblib
 # NOTE: the next import is only valid for scikit-learn version <= 0.17
 # for scikit-learn >= 0.18 use:
 # from sklearn.model_selection import train_test_split
@@ -99,6 +100,8 @@ print(round(t2-t, 2), 'Seconds to extract HOG features...')
 X = np.vstack((car_features, notcar_features)).astype(np.float64)                        
 # Fit a per-column scaler
 X_scaler = StandardScaler().fit(X)
+joblib.dump(X_scaler, 'x_scaler.pkl')
+
 # Apply the scaler to X
 scaled_X = X_scaler.transform(X)
 
@@ -132,5 +135,4 @@ t2 = time.time()
 print(round(t2-t, 5), 'Seconds to predict', n_predict,'labels with SVC')
 
 
-from sklearn.externals import joblib
-joblib.dump(svc, 'model_svm.pkl') 
+joblib.dump(svc, 'model_svm.pkl')

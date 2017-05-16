@@ -86,7 +86,8 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
 
 
 from sklearn.externals import joblib
-svc = joblib.load('model_svm.pkl') 
+X_scaler = joblib.load('x_scaler.pkl')
+svc = joblib.load('model_svm.pkl')
 
 image = mpimg.imread('test_images/test1.jpg')
 
