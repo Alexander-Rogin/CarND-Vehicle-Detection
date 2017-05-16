@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import cv2
+import numpy as np
 
 import sliding_window as sw
+import hog
 
 def getRoiParams(img, xy_window):
     x_start_stop = [0, img.shape[1]]
@@ -45,14 +48,23 @@ def getWindows(image):
     return ret_windows
 
 
+# Define a function to draw bounding boxes
+def draw_boxes(img, bboxes, color=(0, 0, 255), thick=6):
+    # Make a copy of the image
+    imcopy = np.copy(img)
+    # Iterate through the bounding boxes
+    for bbox in bboxes:
+        # Draw a rectangle given bbox coordinates
+        cv2.rectangle(imcopy, bbox[0], bbox[1], color, thick)
+    # Return the image copy with boxes drawn
+    return imcopy
+
 # Define a function you will pass an image 
 # and the list of windows to be searched (output of slide_windows())
 def search_windows(img, windows, clf, scaler, color_space='RGB', 
-                    spatial_size=(32, 32), hist_bins=32, 
-                    hist_range=(0, 256), orient=9, 
+                    orient=9, 
                     pix_per_cell=8, cell_per_block=2, 
-                    hog_channel=0, spatial_feat=True, 
-                    hist_feat=True, hog_feat=True):
+                    hog_channel=0):
 
     #1) Create an empty list to receive positive detection windows
     on_windows = []
@@ -61,12 +73,14 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
         #3) Extract the test window from original image
         test_img = cv2.resize(img[window[0][1]:window[1][1], window[0][0]:window[1][0]], (64, 64))      
         #4) Extract features for that window using single_img_features()
-        features = single_img_features(test_img, color_space=color_space, 
-                            spatial_size=spatial_size, hist_bins=hist_bins, 
-                            orient=orient, pix_per_cell=pix_per_cell, 
-                            cell_per_block=cell_per_block, 
-                            hog_channel=hog_channel, spatial_feat=spatial_feat, 
-                            hist_feat=hist_feat, hog_feat=hog_feat)
+        # features = single_img_features(test_img, color_space=color_space, 
+        #                     spatial_size=spatial_size, hist_bins=hist_bins, 
+        #                     orient=orient, pix_per_cell=pix_per_cell, 
+        #                     cell_per_block=cell_per_block, 
+        #                     hog_channel=hog_channel, spatial_feat=spatial_feat, 
+        #                     hist_feat=hist_feat, hog_feat=hog_feat)
+        features = hog.extract_single_image_features(test_img, cspace=color_space, orient=orient, 
+                        pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
         #5) Scale extracted features to be fed to classifier
         test_features = scaler.transform(np.array(features).reshape(1, -1))
         #6) Predict using your classifier
@@ -78,34 +92,30 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
     return on_windows
 
 
+def getClassifier(train=False):
+    if train:
+        return hog.train()
+    return hog.loadModel()
 
 
 
-
-
-
-
-from sklearn.externals import joblib
-X_scaler = joblib.load('x_scaler.pkl')
-svc = joblib.load('model_svm.pkl')
-
-image = mpimg.imread('test_images/test1.jpg')
-
+image = mpimg.imread('test_images/test6.jpg')
+X_scaler, svc = getClassifier()
 windows = getWindows(image)
 
+draw_image = np.copy(image)
 
 
-
-
-
-
-
+### TODO: Tweak these parameters and see how the results change.
+color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 9
+pix_per_cell = 8
+cell_per_block = 2
+hog_channel = 0 # Can be 0, 1, 2, or "ALL"
 hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space, 
-                        spatial_size=spatial_size, hist_bins=hist_bins, 
                         orient=orient, pix_per_cell=pix_per_cell, 
                         cell_per_block=cell_per_block, 
-                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
-                        hist_feat=hist_feat, hog_feat=hog_feat)                       
+                        hog_channel=hog_channel)                       
 
 window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)                    
 
