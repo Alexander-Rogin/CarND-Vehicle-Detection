@@ -2,9 +2,11 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import cv2
 import numpy as np
+import sys
 
 import sliding_window as sw
 import hog
+import features as feat
 
 def getRoiParams(img, xy_window):
     x_start_stop = [0, img.shape[1]]
@@ -73,14 +75,12 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
         #3) Extract the test window from original image
         test_img = cv2.resize(img[window[0][1]:window[1][1], window[0][0]:window[1][0]], (64, 64))      
         #4) Extract features for that window using single_img_features()
-        # features = single_img_features(test_img, color_space=color_space, 
-        #                     spatial_size=spatial_size, hist_bins=hist_bins, 
-        #                     orient=orient, pix_per_cell=pix_per_cell, 
-        #                     cell_per_block=cell_per_block, 
-        #                     hog_channel=hog_channel, spatial_feat=spatial_feat, 
-        #                     hist_feat=hist_feat, hog_feat=hog_feat)
-        features = hog.extract_single_image_features(test_img, cspace=color_space, orient=orient, 
-                        pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, hog_channel=hog_channel)
+        features = feat.single_img_features(test_img, color_space=color_space, 
+                            spatial_size=spatial_size, hist_bins=hist_bins, 
+                            orient=orient, pix_per_cell=pix_per_cell, 
+                            cell_per_block=cell_per_block, 
+                            hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                            hist_feat=hist_feat, hog_feat=hog_feat)
         #5) Scale extracted features to be fed to classifier
         test_features = scaler.transform(np.array(features).reshape(1, -1))
         #6) Predict using your classifier
@@ -103,6 +103,7 @@ def getClassifier(train=False, color_space='RGB', spatial_size=(32, 32), hist_bi
     return hog.loadModel()
 
 
+
 ### TODO: Tweak these parameters and see how the results change.
 color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 9  # HOG orientations
@@ -117,13 +118,13 @@ hog_feat = True # HOG features on or off
 y_start_stop = [None, None] # Min and max in y to search in slide_window()
 
 
-X_scaler, svc = getClassifier(train=True, color_space=color_space, 
-                        spatial_size=spatial_size, hist_bins=hist_bins, 
-                        orient=orient, pix_per_cell=pix_per_cell, 
-                        cell_per_block=cell_per_block, 
-                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
-                        hist_feat=hist_feat, hog_feat=hog_feat)
-# X_scaler, svc = getClassifier()
+# X_scaler, svc = getClassifier(train=True, color_space=color_space, 
+#                         spatial_size=spatial_size, hist_bins=hist_bins, 
+#                         orient=orient, pix_per_cell=pix_per_cell, 
+#                         cell_per_block=cell_per_block, 
+#                         hog_channel=hog_channel, spatial_feat=spatial_feat, 
+#                         hist_feat=hist_feat, hog_feat=hog_feat)
+X_scaler, svc = getClassifier()
 
 image = mpimg.imread('test_images/test1.jpg')
 windows = getWindows(image)
@@ -140,20 +141,3 @@ window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
 
 plt.imshow(window_img)
 plt.show()
-
-
-
-
-
-
-# print(len(windows))
-
-# for xy_window in xy_windows:
-#     x_start_stop, y_start_stop = getRoiParams(image, xy_window)
-
-#     windows = sw.slide_window(image, x_start_stop=x_start_stop, y_start_stop=y_start_stop, 
-#                         xy_window=xy_window, xy_overlap=(0.5, 0.5))
-
-#     window_img = sw.draw_boxes(image, windows, color=(0, 0, 255), thick=6)
-#     plt.imshow(window_img)
-#     plt.show()
