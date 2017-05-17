@@ -95,8 +95,8 @@ def train(color_space='RGB', spatial_size=(32, 32), hist_bins=32, orient=9, pix_
     notcars = notcars[0:sample_size]
 
 
-    print(cars[:5])
-    exit()
+    # print(len(cars))
+    # print(len(notcars))
     t=time.time()
     car_features = features.extract_features(cars, color_space=color_space, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
