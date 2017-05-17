@@ -103,6 +103,17 @@ def getClassifier(train=False, color_space='RGB', spatial_size=(32, 32), hist_bi
     return hog.loadModel()
 
 
+image_path = 'test_images/test1.jpg'
+train = False
+
+argc = len(sys.argv)
+for i in range(argc):
+    if sys.argv[i] == '--image' and i < argc - 1:
+        i += 1
+        image_path = sys.argv[i]
+    elif sys.argv[i] == '--train':
+        train = True
+
 
 ### TODO: Tweak these parameters and see how the results change.
 color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
@@ -118,15 +129,14 @@ hog_feat = True # HOG features on or off
 y_start_stop = [None, None] # Min and max in y to search in slide_window()
 
 
-# X_scaler, svc = getClassifier(train=True, color_space=color_space, 
-#                         spatial_size=spatial_size, hist_bins=hist_bins, 
-#                         orient=orient, pix_per_cell=pix_per_cell, 
-#                         cell_per_block=cell_per_block, 
-#                         hog_channel=hog_channel, spatial_feat=spatial_feat, 
-#                         hist_feat=hist_feat, hog_feat=hog_feat)
-X_scaler, svc = getClassifier()
+X_scaler, svc = getClassifier(train=train, color_space=color_space, 
+                        spatial_size=spatial_size, hist_bins=hist_bins, 
+                        orient=orient, pix_per_cell=pix_per_cell, 
+                        cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, spatial_feat=spatial_feat, 
+                        hist_feat=hist_feat, hog_feat=hog_feat)
 
-image = mpimg.imread('test_images/test1.jpg')
+image = mpimg.imread(image_path)
 windows = getWindows(image)
 
 draw_image = np.copy(image)
