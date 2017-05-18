@@ -5,12 +5,12 @@ import numpy as np
 import sys
 
 import sliding_window as sw
-import hog
+import model
 import features as feat
 
 def getRoiParams(img, xy_window):
     x_start_stop = [0, img.shape[1]]
-    y_start_stop = [400, 680]
+    y_start_stop = [400, 640]
 
     if xy_window[0] == xy_window[1]:
         center = int(img.shape[1] / 2)
@@ -24,8 +24,8 @@ def getRoiParams(img, xy_window):
         x_start_stop[1] = img.shape[1]
     if y_start_stop[0] < 0:
         y_start_stop[0] = 0
-    if y_start_stop[1] >= img.shape[0]:
-        y_start_stop[1] = img.shape[0]
+    if y_start_stop[1] >= 640:
+        y_start_stop[1] = 640
     return x_start_stop, y_start_stop
 
 def getWindows(image):
@@ -75,6 +75,7 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
     on_windows = []
     #2) Iterate over all windows in the list
     for window in windows:
+        # print(window)
         #3) Extract the test window from original image
         test_img = cv2.resize(img[window[0][1]:window[1][1], window[0][0]:window[1][0]], (64, 64))      
         #4) Extract features for that window using single_img_features()
@@ -99,11 +100,11 @@ def getClassifier(train=False, color_space='RGB', spatial_size=(32, 32), hist_bi
                         pix_per_cell=8, cell_per_block=2, hog_channel=0,
                         spatial_feat=True, hist_feat=True, hog_feat=True):
     if train:
-        return hog.train(color_space=color_space, spatial_size=spatial_size, hist_bins=hist_bins, 
+        return model.train(color_space=color_space, spatial_size=spatial_size, hist_bins=hist_bins, 
                         orient=orient, pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, 
                         hog_channel=hog_channel, spatial_feat=spatial_feat, hist_feat=hist_feat, hog_feat=hog_feat)
 
-    return hog.loadModel()
+    return model.load()
 
 
 image_path = 'test_images/test1.jpg'
@@ -119,16 +120,23 @@ for i in range(argc):
 
 
 ### TODO: Tweak these parameters and see how the results change.
-color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-orient = 9  # HOG orientations
+# Color:
+hist_feat = True # Histogram features on or off
+color_space = 'HSV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+hist_bins = 4    # Number of histogram bins (16)
+
+# HOG
+hog_feat = True # HOG features on or off
+orient = 9  # HOG orientations (9)
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
 hog_channel = 2 # Can be 0, 1, 2, or "ALL"
-spatial_size = (16, 16) # Spatial binning dimensions
-hist_bins = 16    # Number of histogram bins
+
+# Spatial
 spatial_feat = True # Spatial features on or off
-hist_feat = True # Histogram features on or off
-hog_feat = True # HOG features on or off
+spatial_size = (16, 16) # Spatial binning dimensions (16, 16)
+
+
 y_start_stop = [None, None] # Min and max in y to search in slide_window()
 
 
@@ -140,6 +148,8 @@ X_scaler, svc = getClassifier(train=train, color_space=color_space,
                         hist_feat=hist_feat, hog_feat=hog_feat)
 
 image = mpimg.imread(image_path)
+# !!!
+image = image.astype(np.float32)/255
 windows = getWindows(image)
 
 draw_image = np.copy(image)
@@ -152,7 +162,7 @@ hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_sp
                         hog_channel=hog_channel, spatial_feat=spatial_feat, 
                         hist_feat=hist_feat, hog_feat=hog_feat)
 
-window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)                    
+window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
 
 plt.imshow(window_img)
 plt.show()
