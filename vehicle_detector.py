@@ -16,7 +16,7 @@ def getRoiParams(img, xy_window):
         center = int(img.shape[1] / 2)
         x_start_stop[0] = center - 3 * xy_window[0]
         x_start_stop[1] = center + 3 * xy_window[0]
-    y_start_stop[1] = (y_start_stop[0] + int(1.5 * xy_window[1]) + 1)
+    y_start_stop[1] = (y_start_stop[0] + 2 * xy_window[1])
 
     if x_start_stop[0] < 0:
         x_start_stop[0] = 0
@@ -36,6 +36,9 @@ def getWindows(image):
         (192, 128),
         (192, 192),
         (256, 192),
+        (256, 256),
+        (320, 256),
+        (320, 320),
         (320, 192),
         (384, 192)]
 
@@ -44,7 +47,7 @@ def getWindows(image):
         x_start_stop, y_start_stop = getRoiParams(image, xy_window)
 
         windows = sw.slide_window(image, x_start_stop=x_start_stop, y_start_stop=y_start_stop, 
-                        xy_window=xy_window, xy_overlap=(0.5, 0.5))
+                        xy_window=xy_window, xy_overlap=(0.75, 0.75))
 
         ret_windows += windows
     return ret_windows
@@ -112,18 +115,18 @@ class VehicleDetector:
         # Color:
         self.hist_feat = True # Histogram features on or off
         self.color_space = 'HSV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-        self.hist_bins = 4    # Number of histogram bins (16)
+        self.hist_bins = 32    # Number of histogram bins (16)
 
         # HOG
         self.hog_feat = True # HOG features on or off
-        self.orient = 9  # HOG orientations (9)
+        self.orient = 6  # HOG orientations (9)
         self.pix_per_cell = 8 # HOG pixels per cell
         self.cell_per_block = 2 # HOG cells per block
         self.hog_channel = 2 # Can be 0, 1, 2, or "ALL"
 
         # Spatial
         self.spatial_feat = True # Spatial features on or off
-        self.spatial_size = (16, 16) # Spatial binning dimensions (16, 16)
+        self.spatial_size = (32, 32) # Spatial binning dimensions (16, 16)
 
         if train:
             self.X_scaler, self.svc = model.train(color_space=self.color_space, spatial_size=self.spatial_size, hist_bins=self.hist_bins, 
@@ -133,10 +136,10 @@ class VehicleDetector:
             self.X_scaler, self.svc = model.load()
 
     def processImage(self, image, pngJpg=True):
+        draw_image = np.copy(image)
         if pngJpg:
             image = image.astype(np.float32)/255
         windows = getWindows(image)
-        draw_image = np.copy(image)
         hot_windows = search_windows(image, windows, self.svc, self.X_scaler, color_space=self.color_space, 
                             spatial_size=self.spatial_size, hist_bins=self.hist_bins, 
                             orient=self.orient, pix_per_cell=self.pix_per_cell, 
