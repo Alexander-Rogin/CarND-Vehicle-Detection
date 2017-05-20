@@ -21,7 +21,7 @@ def train(color_space='RGB', spatial_size=(32, 32), hist_bins=32, orient=9, pix_
     notcars = glob.glob('train_images/non-vehicles/**/*.png', recursive=True)
 
     # Reduce the sample size to test params
-    sample_size = 500
+    sample_size = 1000
     cars = cars[0:sample_size]
     notcars = notcars[0:sample_size]
 
