@@ -16,40 +16,31 @@ def getRoiParams(img, xy_window):
     #     center = int(img.shape[1] / 2)
     #     x_start_stop[0] = center - 4 * xy_window[0]
     #     x_start_stop[1] = center + 4 * xy_window[0]
-    # y_start_stop[1] = (y_start_stop[0] + 2 * xy_window[1])
+    y_start_stop[1] = (y_start_stop[0] + 3 * xy_window[1])
 
     if x_start_stop[0] < 0:
         x_start_stop[0] = 0
     if x_start_stop[1] >= img.shape[1]:
         x_start_stop[1] = img.shape[1]
-    if y_start_stop[0] < 0:
-        y_start_stop[0] = 0
     if y_start_stop[1] >= 640:
         y_start_stop[1] = 640
     return x_start_stop, y_start_stop
 
 def getWindows(image):
-    xy_windows = [
-        (64, 64),
-        (128, 64),
-        (128, 128),
-        (192, 128),
-        (192, 192),
-        (256, 192),
-        (256, 256),
-        (320, 256),
-        (320, 320),
-        (320, 192),
-        (384, 192)]
-
+    xy_window = (64, 64)
     ret_windows = []
-    for xy_window in xy_windows:
+    while xy_window[0] < 240:
         x_start_stop, y_start_stop = getRoiParams(image, xy_window)
 
         windows = sw.slide_window(image, x_start_stop=x_start_stop, y_start_stop=y_start_stop, 
                         xy_window=xy_window, xy_overlap=(0.75, 0.75))
 
         ret_windows += windows
+
+        if xy_window[0] > xy_window[1]:
+            xy_window = (xy_window[0], xy_window[0])
+        else:
+            xy_window = (xy_window[0] + 64, xy_window[1])
     return ret_windows
 
 
@@ -135,7 +126,7 @@ def draw_labeled_bboxes(img, labels):
         nonzeroy = np.array(nonzero[0])
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
-        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
+        bbox = ((np.min(nonzerox)-20, np.min(nonzeroy)-20), (np.max(nonzerox), np.max(nonzeroy)))
         # Draw the box on the image
         cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
     # Return the image
@@ -146,12 +137,12 @@ class VehicleDetector:
         ### TODO: Tweak these parameters and see how the results change.
         # Color:
         self.hist_feat = True # Histogram features on or off
-        self.color_space = 'HSV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-        self.hist_bins = 32    # Number of histogram bins (16)
+        self.color_space = 'YUV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+        self.hist_bins = 10    # Number of histogram bins (16)
 
         # HOG
         self.hog_feat = True # HOG features on or off
-        self.orient = 6  # HOG orientations (9)
+        self.orient = 16  # HOG orientations (9)
         self.pix_per_cell = 8 # HOG pixels per cell
         self.cell_per_block = 2 # HOG cells per block
         self.hog_channel = 1 # Can be 0, 1, 2, or "ALL"
@@ -187,7 +178,7 @@ class VehicleDetector:
         heat = add_heat(heat, hot_windows)
     
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 2)
+        heat = apply_threshold(heat, 1)
 
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
@@ -196,20 +187,20 @@ class VehicleDetector:
         labels = label(heatmap)
         draw_img = draw_labeled_bboxes(np.copy(draw_image), labels)
 
-        # fig = plt.figure()
-        # plt.subplot(121)
-        # plt.imshow(draw_img)
-        # plt.title('Car Positions')
-        # plt.subplot(122)
-        # plt.imshow(heatmap, cmap='hot')
-        # plt.title('Heat Map')
-        # fig.tight_layout()
+        fig = plt.figure()
+        plt.subplot(121)
+        plt.imshow(draw_img)
+        plt.title('Car Positions')
+        plt.subplot(122)
+        plt.imshow(heatmap, cmap='hot')
+        plt.title('Heat Map')
+        fig.tight_layout()
 
-        # return window_img
+        return window_img
 
 
         
-        return draw_img
+        # return draw_img
 
 
         
@@ -240,7 +231,7 @@ if not useVideo:
     
     result = vd.processImage(image)
 
-    plt.imshow(result)
+    # plt.imshow(result)
     plt.show()
 else:
     from moviepy.editor import VideoFileClip
