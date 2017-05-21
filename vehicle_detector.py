@@ -154,7 +154,7 @@ class VehicleDetector:
         self.orient = 6  # HOG orientations (9)
         self.pix_per_cell = 8 # HOG pixels per cell
         self.cell_per_block = 2 # HOG cells per block
-        self.hog_channel = 0 # Can be 0, 1, 2, or "ALL"
+        self.hog_channel = 1 # Can be 0, 1, 2, or "ALL"
 
         # Spatial
         self.spatial_feat = True # Spatial features on or off
@@ -204,10 +204,15 @@ class VehicleDetector:
         # plt.imshow(heatmap, cmap='hot')
         # plt.title('Heat Map')
         # fig.tight_layout()
+
+        # return window_img
+
+
+        
         return draw_img
 
 
-        # return window_img
+        
 
 
 
