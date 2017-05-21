@@ -1,5 +1,6 @@
 import numpy as np
 import glob
+import random
 import time
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
@@ -17,17 +18,19 @@ SVC_FILENAME = 'svc.pkl'
 def train(color_space='RGB', spatial_size=(32, 32), hist_bins=32, orient=9, pix_per_cell=8,
             cell_per_block=2, hog_channel=0, spatial_feat=True, hist_feat=True, hog_feat=True):
     # Divide up into cars and notcars
-    cars = glob.glob('train_images/vehicles/**/*.png', recursive=True)
-    notcars = glob.glob('train_images/non-vehicles/**/*.png', recursive=True)
+    cars = glob.glob('train_images/vehicles/GTI_*/**/*.png', recursive=True)
+    notcars = glob.glob('train_images/non-vehicles/GTI/**/*.png', recursive=True)
 
+    random.shuffle(cars)
+    random.shuffle(notcars)
+    min_size = min(len(cars), len(notcars))
+    cars = cars[:min_size]
+    notcars = notcars[:min_size]
     # Reduce the sample size to test params
-    sample_size = 1000
-    cars = cars[0:sample_size]
-    notcars = notcars[0:sample_size]
+    # sample_size = 500
+    # cars = cars[0:sample_size]
+    # notcars = notcars[0:sample_size]
 
-
-    # print(len(cars))
-    # print(len(notcars))
     t=time.time()
     car_features = feat.extract_features(cars, color_space=color_space, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 

@@ -13,10 +13,10 @@ def getRoiParams(img, xy_window):
     y_start_stop = [400, 640]
 
     # if xy_window[0] == xy_window[1]:
-    #     center = int(img.shape[1] / 2)
-    #     x_start_stop[0] = center - 4 * xy_window[0]
-    #     x_start_stop[1] = center + 4 * xy_window[0]
-    y_start_stop[1] = (y_start_stop[0] + 3 * xy_window[1])
+    center = int(img.shape[1] / 2)
+    x_start_stop[0] = center - 6 * xy_window[0]
+    x_start_stop[1] = center + 6 * xy_window[0]
+    y_start_stop[1] = (y_start_stop[0] + 2 * xy_window[1])
 
     if x_start_stop[0] < 0:
         x_start_stop[0] = 0
@@ -33,7 +33,7 @@ def getWindows(image):
         x_start_stop, y_start_stop = getRoiParams(image, xy_window)
 
         windows = sw.slide_window(image, x_start_stop=x_start_stop, y_start_stop=y_start_stop, 
-                        xy_window=xy_window, xy_overlap=(0.75, 0.75))
+                        xy_window=xy_window, xy_overlap=(0.66, 0.66))
 
         ret_windows += windows
 
@@ -69,7 +69,6 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
     on_windows = []
     #2) Iterate over all windows in the list
     for window in windows:
-        # print(window)
         #3) Extract the test window from original image
         test_img = cv2.resize(img[window[0][1]:window[1][1], window[0][0]:window[1][0]], (64, 64))      
         #4) Extract features for that window using single_img_features()
@@ -137,15 +136,15 @@ class VehicleDetector:
         ### TODO: Tweak these parameters and see how the results change.
         # Color:
         self.hist_feat = True # Histogram features on or off
-        self.color_space = 'YUV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-        self.hist_bins = 10    # Number of histogram bins (16)
+        self.color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+        self.hist_bins = 128    # Number of histogram bins (16)
 
         # HOG
         self.hog_feat = True # HOG features on or off
-        self.orient = 16  # HOG orientations (9)
-        self.pix_per_cell = 8 # HOG pixels per cell
-        self.cell_per_block = 2 # HOG cells per block
-        self.hog_channel = 1 # Can be 0, 1, 2, or "ALL"
+        self.orient = 18  # HOG orientations (9)
+        self.pix_per_cell = 16 # HOG pixels per cell 8
+        self.cell_per_block = 2 # HOG cells per block 2
+        self.hog_channel = (0, 1, 2) # Can be 0, 1, 2, or "ALL"
 
         # Spatial
         self.spatial_feat = True # Spatial features on or off
@@ -169,17 +168,13 @@ class VehicleDetector:
                             cell_per_block=self.cell_per_block, 
                             hog_channel=self.hog_channel, spatial_feat=self.spatial_feat, 
                             hist_feat=self.hist_feat, hog_feat=self.hog_feat)
-
         window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
-
 
         heat = np.zeros_like(draw_image[:,:,0]).astype(np.float)
         # Add heat to each box in box list
         heat = add_heat(heat, hot_windows)
-    
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 1)
-
+        heat = apply_threshold(heat, 3)
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
 
@@ -198,13 +193,8 @@ class VehicleDetector:
 
         return window_img
 
-
         
         # return draw_img
-
-
-        
-
 
 
 image_path = 'test_images/test1.jpg'

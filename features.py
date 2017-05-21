@@ -53,7 +53,6 @@ def extract_features(imgs, color_space='RGB', spatial_size=(32, 32),
     for file in imgs:
         # Read in each one by one
         image = mpimg.imread(file)
-
         file_features = single_img_features(image, color_space=color_space,
                             spatial_size=spatial_size, hist_bins=hist_bins,
                             orient=orient, pix_per_cell=pix_per_cell,
@@ -100,14 +99,18 @@ def single_img_features(img, color_space='RGB', spatial_size=(32, 32),
     #7) Compute HOG features if flag is set
     if hog_feat == True:
         if hog_channel == 'ALL':
-            hog_features = []
-            for channel in range(feature_image.shape[2]):
-                hog_features.extend(get_hog_features(feature_image[:,:,channel], 
-                                    orient, pix_per_cell, cell_per_block, 
-                                    vis=False, feature_vec=True))      
-        else:
-            hog_features = get_hog_features(feature_image[:,:,hog_channel], orient, 
-                        pix_per_cell, cell_per_block, vis=False, feature_vec=True)
+            hog_channel = (0, 1, 2)
+        if type(hog_channel) is int or len(hog_channel) == 1:
+            hog_channel = (hog_channel,)
+        hog_features = []
+        # for channel in range(feature_image.shape[2]):
+        for channel in hog_channel:
+            hog_features.extend(get_hog_features(feature_image[:,:,channel], 
+                                orient, pix_per_cell, cell_per_block, 
+                                vis=False, feature_vec=True))      
+        # else:
+            # hog_features = get_hog_features(feature_image[:,:,hog_channel], orient, 
+                        # pix_per_cell, cell_per_block, vis=False, feature_vec=True)
         #8) Append features to list
         img_features.append(hog_features)
 
