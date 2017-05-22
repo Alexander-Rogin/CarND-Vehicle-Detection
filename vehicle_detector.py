@@ -13,25 +13,26 @@ def getRoiParams(img, xy_window):
     y_start_stop = [400, 640]
 
     # if xy_window[0] == xy_window[1]:
-    center = int(img.shape[1] / 2)
-    x_start_stop[0] = center - 6 * xy_window[0]
-    x_start_stop[1] = center + 6 * xy_window[0]
-    y_start_stop[1] = (y_start_stop[0] + 2 * xy_window[1])
+    # center = int(img.shape[1] / 2)
+    # x_start_stop[0] = center - 6 * xy_window[0]
+    # x_start_stop[1] = center + 6 * xy_window[0]
+    # y_start_stop[1] = (y_start_stop[0] + 2 * xy_window[1])
 
-    if x_start_stop[0] < 0:
-        x_start_stop[0] = 0
-    if x_start_stop[1] >= img.shape[1]:
-        x_start_stop[1] = img.shape[1]
-    if y_start_stop[1] >= 640:
-        y_start_stop[1] = 640
+    # if x_start_stop[0] < 0:
+    #     x_start_stop[0] = 0
+    # if x_start_stop[1] >= img.shape[1]:
+    #     x_start_stop[1] = img.shape[1]
+    # if y_start_stop[1] >= 640:
+    #     y_start_stop[1] = 640
     return x_start_stop, y_start_stop
 
 def getWindows(image):
     xy_window = (64, 64)
+    scales = (1, 1.5, 2, 2.5)
     ret_windows = []
-    while xy_window[0] < 240:
+    for scale in scales:
         x_start_stop, y_start_stop = getRoiParams(image, xy_window)
-
+        xy_window = (int(scale * 64), int(scale * 64))
         windows = sw.slide_window(image, x_start_stop=x_start_stop, y_start_stop=y_start_stop, 
                         xy_window=xy_window, xy_overlap=(0.66, 0.66))
 
@@ -136,7 +137,7 @@ class VehicleDetector:
         ### TODO: Tweak these parameters and see how the results change.
         # Color:
         self.hist_feat = True # Histogram features on or off
-        self.color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+        self.color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
         self.hist_bins = 128    # Number of histogram bins (16)
 
         # HOG
