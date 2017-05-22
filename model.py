@@ -28,9 +28,9 @@ def train(color_space='RGB', spatial_size=(32, 32), hist_bins=32, orient=9, pix_
     notcars = notcars[:min_size]
     print(min_size)
     # Reduce the sample size to test params
-    sample_size = 500
-    cars = cars[0:sample_size]
-    notcars = notcars[0:sample_size]
+    # sample_size = 500
+    # cars = cars[0:sample_size]
+    # notcars = notcars[0:sample_size]
 
     t=time.time()
     car_features = feat.extract_features(cars, color_space=color_space, 

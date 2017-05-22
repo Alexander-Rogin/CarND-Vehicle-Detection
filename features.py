@@ -108,9 +108,6 @@ def single_img_features(img, color_space='RGB', spatial_size=(32, 32),
             hog_features.extend(get_hog_features(feature_image[:,:,channel], 
                                 orient, pix_per_cell, cell_per_block, 
                                 vis=False, feature_vec=True))      
-        # else:
-            # hog_features = get_hog_features(feature_image[:,:,hog_channel], orient, 
-                        # pix_per_cell, cell_per_block, vis=False, feature_vec=True)
         #8) Append features to list
         img_features.append(hog_features)
 

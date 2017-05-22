@@ -183,19 +183,21 @@ class VehicleDetector:
         labels = label(heatmap)
         draw_img = draw_labeled_bboxes(np.copy(draw_image), labels)
 
-        fig = plt.figure()
-        plt.subplot(121)
-        plt.imshow(draw_img)
-        plt.title('Car Positions')
-        plt.subplot(122)
-        plt.imshow(heatmap, cmap='hot')
-        plt.title('Heat Map')
-        fig.tight_layout()
+        # fig = plt.figure()
+        # plt.subplot(121)
+        # plt.imshow(draw_img)
+        # plt.title('Car Positions')
+        # plt.subplot(122)
+        # plt.imshow(heatmap, cmap='hot')
+        # plt.title('Heat Map')
+        # fig.tight_layout()
+        # plt.show()
 
-        return window_img
+        # return window_img
+
 
         
-        # return draw_img
+        return draw_img
 
 
 image_path = 'test_images/test1.jpg'
@@ -222,7 +224,7 @@ if not useVideo:
     
     result = vd.processImage(image)
 
-    # plt.imshow(result)
+    plt.imshow(result)
     plt.show()
 else:
     from moviepy.editor import VideoFileClip
