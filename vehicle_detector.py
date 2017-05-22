@@ -138,11 +138,11 @@ class VehicleDetector:
         # Color:
         self.hist_feat = True # Histogram features on or off
         self.color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-        self.hist_bins = 128    # Number of histogram bins (16)
+        self.hist_bins = 8    # Number of histogram bins (16)
 
         # HOG
         self.hog_feat = True # HOG features on or off
-        self.orient = 18  # HOG orientations (9)
+        self.orient = 6  # HOG orientations (9)
         self.pix_per_cell = 8 # HOG pixels per cell 8
         self.cell_per_block = 2 # HOG cells per block 2
         self.hog_channel = (0, 1, 2) # Can be 0, 1, 2, or "ALL"
