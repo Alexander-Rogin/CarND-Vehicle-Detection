@@ -175,7 +175,7 @@ class VehicleDetector:
         # Add heat to each box in box list
         heat = add_heat(heat, hot_windows)
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 2)
+        heat = apply_threshold(heat, 1)
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
 
