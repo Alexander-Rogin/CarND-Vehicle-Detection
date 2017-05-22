@@ -143,7 +143,7 @@ class VehicleDetector:
         # HOG
         self.hog_feat = True # HOG features on or off
         self.orient = 18  # HOG orientations (9)
-        self.pix_per_cell = 16 # HOG pixels per cell 8
+        self.pix_per_cell = 8 # HOG pixels per cell 8
         self.cell_per_block = 2 # HOG cells per block 2
         self.hog_channel = (0, 1, 2) # Can be 0, 1, 2, or "ALL"
 
@@ -175,7 +175,7 @@ class VehicleDetector:
         # Add heat to each box in box list
         heat = add_heat(heat, hot_windows)
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 3)
+        heat = apply_threshold(heat, 2)
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
 
