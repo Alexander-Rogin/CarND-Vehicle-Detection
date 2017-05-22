@@ -101,12 +101,13 @@ def getClassifier(train=False, color_space='RGB', spatial_size=(32, 32), hist_bi
     return model.load()
 
 from scipy.ndimage.measurements import label
-def add_heat(heatmap, bbox_list):
+def add_heat(heatmap, bbox_list_list):
     # Iterate through list of bboxes
-    for box in bbox_list:
+    for box_list in bbox_list_list:
+        for box in box_list:
         # Add += 1 for all pixels inside each bbox
         # Assuming each "box" takes the form ((x1, y1), (x2, y2))
-        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
+            heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
 
     # Return updated heatmap
     return heatmap# Iterate through list of bboxes
@@ -117,7 +118,34 @@ def apply_threshold(heatmap, threshold):
     # Return thresholded map
     return heatmap
 
+previous_bboxes = []
+def check_bboxes(bboxes):
+    global previous_bboxes
+    flags = []
+    previous_bboxes.append(bboxes)
+    if len(previous_bboxes) > 5:
+        previous_bboxes = previous_bboxes[1:]
+    for bbox in bboxes:
+        count = 0
+        for frame in previous_bboxes:
+            for p_bbox in frame:
+                delta = 50
+                # print(bbox)
+                # print(p_bbox)
+                if abs(bbox[0][0] - p_bbox[0][0]) < delta and abs(bbox[0][1] - p_bbox[0][1]) < delta:
+                    count += 1
+                    break
+        # print(count)
+        if count > int(len(previous_bboxes) / 2):
+            flags.append(True)
+        else:
+            flags.append(False)
+    
+    print(flags)
+    return flags
+
 def draw_labeled_bboxes(img, labels):
+    # bboxes = []
     # Iterate through all detected cars
     for car_number in range(1, labels[1]+1):
         # Find pixels with each car_number label value
@@ -127,8 +155,14 @@ def draw_labeled_bboxes(img, labels):
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
         bbox = ((np.min(nonzerox)-20, np.min(nonzeroy)-20), (np.max(nonzerox), np.max(nonzeroy)))
+        # bboxes.append(bbox)
         # Draw the box on the image
         cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
+    # flags = check_bboxes(bboxes)
+    # assert len(bboxes) == len(flags)
+    # for i in range(len(bboxes)):
+    #     if flags[i]:
+    #         cv2.rectangle(img, bboxes[i][0], bboxes[i][1], (0,0,255), 6)
     # Return the image
     return img
 
@@ -158,6 +192,8 @@ class VehicleDetector:
         else:
             self.X_scaler, self.svc = model.load()
 
+        self.all_hot_windows = []
+
     def processImage(self, image, pngJpg=True):
         draw_image = np.copy(image)
         if pngJpg:
@@ -173,15 +209,20 @@ class VehicleDetector:
 
         heat = np.zeros_like(draw_image[:,:,0]).astype(np.float)
         # Add heat to each box in box list
-        heat = add_heat(heat, hot_windows)
+        self.all_hot_windows.append(hot_windows)
+        if len(self.all_hot_windows) > 5:
+            self.all_hot_windows.pop(0)
+        # heat = add_heat(heat, hot_windows)
+        # print(self.all_hot_windows)
+        heat = add_heat(heat, self.all_hot_windows)
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 1)
+        heat = apply_threshold(heat, 10) # For the test images heat threshold should be lower because there's no history
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
 
         # Find final boxes from heatmap using label function
         labels = label(heatmap)
-        draw_img = draw_labeled_bboxes(np.copy(draw_image), labels)
+        draw_img = draw_labeled_bboxes(draw_image, labels)
 
         # fig = plt.figure()
         # plt.subplot(121)
