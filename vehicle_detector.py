@@ -154,7 +154,7 @@ def draw_labeled_bboxes(img, labels):
         nonzeroy = np.array(nonzero[0])
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
-        bbox = ((np.min(nonzerox)-20, np.min(nonzeroy)-20), (np.max(nonzerox), np.max(nonzeroy)))
+        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
         # bboxes.append(bbox)
         # Draw the box on the image
         cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
@@ -216,7 +216,7 @@ class VehicleDetector:
         # print(self.all_hot_windows)
         heat = add_heat(heat, self.all_hot_windows)
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 10) # For the test images heat threshold should be lower because there's no history
+        heat = apply_threshold(heat, 20) # For the test images heat threshold should be lower because there's no history
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
 
