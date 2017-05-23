@@ -118,34 +118,7 @@ def apply_threshold(heatmap, threshold):
     # Return thresholded map
     return heatmap
 
-previous_bboxes = []
-def check_bboxes(bboxes):
-    global previous_bboxes
-    flags = []
-    previous_bboxes.append(bboxes)
-    if len(previous_bboxes) > 5:
-        previous_bboxes = previous_bboxes[1:]
-    for bbox in bboxes:
-        count = 0
-        for frame in previous_bboxes:
-            for p_bbox in frame:
-                delta = 50
-                # print(bbox)
-                # print(p_bbox)
-                if abs(bbox[0][0] - p_bbox[0][0]) < delta and abs(bbox[0][1] - p_bbox[0][1]) < delta:
-                    count += 1
-                    break
-        # print(count)
-        if count > int(len(previous_bboxes) / 2):
-            flags.append(True)
-        else:
-            flags.append(False)
-    
-    print(flags)
-    return flags
-
 def draw_labeled_bboxes(img, labels):
-    # bboxes = []
     # Iterate through all detected cars
     for car_number in range(1, labels[1]+1):
         # Find pixels with each car_number label value
@@ -154,15 +127,10 @@ def draw_labeled_bboxes(img, labels):
         nonzeroy = np.array(nonzero[0])
         nonzerox = np.array(nonzero[1])
         # Define a bounding box based on min/max x and y
-        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
+        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox) - 20, np.max(nonzeroy) - 20))
         # bboxes.append(bbox)
         # Draw the box on the image
         cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
-    # flags = check_bboxes(bboxes)
-    # assert len(bboxes) == len(flags)
-    # for i in range(len(bboxes)):
-    #     if flags[i]:
-    #         cv2.rectangle(img, bboxes[i][0], bboxes[i][1], (0,0,255), 6)
     # Return the image
     return img
 
@@ -210,13 +178,13 @@ class VehicleDetector:
         heat = np.zeros_like(draw_image[:,:,0]).astype(np.float)
         # Add heat to each box in box list
         self.all_hot_windows.append(hot_windows)
-        if len(self.all_hot_windows) > 30:
+        if len(self.all_hot_windows) > 40:
             self.all_hot_windows.pop(0)
         # heat = add_heat(heat, hot_windows)
         # print(self.all_hot_windows)
         heat = add_heat(heat, self.all_hot_windows)
         # Apply threshold to help remove false positives
-        heat = apply_threshold(heat, 20) # For the test images heat threshold should be lower because there's no history
+        heat = apply_threshold(heat, 40) # For the test images heat threshold should be lower because there's no history
         # Visualize the heatmap when displaying    
         heatmap = np.clip(heat, 0, 255)
 
