@@ -210,7 +210,7 @@ class VehicleDetector:
         heat = np.zeros_like(draw_image[:,:,0]).astype(np.float)
         # Add heat to each box in box list
         self.all_hot_windows.append(hot_windows)
-        if len(self.all_hot_windows) > 5:
+        if len(self.all_hot_windows) > 20:
             self.all_hot_windows.pop(0)
         # heat = add_heat(heat, hot_windows)
         # print(self.all_hot_windows)
