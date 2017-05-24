@@ -80,13 +80,11 @@ I recorded the positions of positive detections in each frame of the video. From
 
 For processing videos, I used detections from previous frames to filter false-positive detections and decrease probability of misses.
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are four frames, their corresponding heatmaps and the output of `scipy.ndimage.measurements.label()` on the integrated heatmap:
+Here's an example result showing the heatmap from a set of the video frames, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
 ![alt text][image5]
 
-### Here the resulting bounding boxes are drawn onto a frame:
+Here the resulting bounding boxes are drawn onto a frame:
 ![alt text][image6]
 
 
