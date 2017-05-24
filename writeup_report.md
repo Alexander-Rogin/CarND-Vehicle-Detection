@@ -85,6 +85,7 @@ Here's an example result showing the heatmap from a set of the video frames, the
 ![alt text][image5]
 
 Here the resulting bounding boxes are drawn onto a frame:
+
 ![alt text][image6]
 
 
